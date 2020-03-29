@@ -1,7 +1,9 @@
 package com.hatemogi.scala
 
+import cats.data.Kleisli
 import cats.effect._
 import cats.implicits._
+import io.chrisdavenport.vault.Key
 import org.http4s._
 import org.http4s.dsl.io._
 import org.http4s.implicits._
@@ -24,7 +26,18 @@ object Main extends App {
       Ok(s"안녕하세요, $name.")
   }
 
-  val httpApp = Router("/" -> helloWorldService).orNotFound
+  val reqIdKey = Key.newKey[IO, String].unsafeRunSync()
+
+  def requestIdSetter(service: HttpRoutes[IO]): HttpRoutes[IO] = Kleisli { req: Request[IO] =>
+    val reqId = java.util.UUID.randomUUID().toString
+    service(req.withAttribute(reqIdKey, reqId)).map { res: Response[IO] =>
+      res.putHeaders(Header("X-Request-Id", reqId))
+    }
+  }
+
+  val httpApp = requestIdSetter(
+    Router("/" -> helloWorldService)
+  ).orNotFound
 
   val server = BlazeServerBuilder[IO]
     .bindHttp(8080, "localhost")
