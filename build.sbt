@@ -1,10 +1,10 @@
 version := "0.1"
 
-scalaVersion := "2.13.2"
+scalaVersion := "2.13.7"
 
 val http4sVersion = "0.21.2"
 val circeVersion = "0.13.0"
-val catsVersion = "2.0.0"
+val catsVersion = "2.3.0"
 val fs2Version = "2.2.1"
 
 val http4sDependencies = Seq(
